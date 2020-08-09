@@ -191,6 +191,7 @@ export default {
   computed: {
     productsBySearch() {
       return this.getProductByTitle();
+      
     },
   },
   methods: {
