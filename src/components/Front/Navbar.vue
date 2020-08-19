@@ -15,10 +15,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <form
-          class="form-inline my-2 my-lg-0 ml-auto"
-          @submit.prevent="searchByName(search)"
-        >
+        <form class="form-inline my-2 my-lg-0 ml-auto" @submit.prevent="searchByName(search)">
           <input
             class="form-control mr-sm-2"
             type="search"
@@ -29,10 +26,14 @@
           />
         </form>
         <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <cart></cart>
+          </li>
           <li class="nav-item" v-if="user">
-            <router-link class="nav-link text-capitalize" to="/admin"
-              >{{ user }} <span class="sr-only">(current)</span></router-link
-            >
+            <router-link class="nav-link text-capitalize" to="/admin">
+              {{ user }}
+              <span class="sr-only">(current)</span>
+            </router-link>
           </li>
           <li class="nav-item" v-if="session" @click="logOut">
             <a class="nav-link" href="#">Log out</a>
@@ -50,31 +51,26 @@
 </template>
 
 <script>
-import { fb, db } from "../../firebase";
+import { fb } from "../../firebase";
+import Cart from "./cart";
 export default {
   name: "Navbar",
+  components: { Cart },
   data() {
     return {
       search: "",
       user: "",
-      session: "",
+      session: ""
     };
   },
   created() {
-    fb.auth().onAuthStateChanged((user) => {
+    fb.auth().onAuthStateChanged(user => {
       if (user) {
-        let dbRef = db.collection("users").doc(user.uid);
-        dbRef
-          .get()
-          .then((doc) => {
-            this.user = doc.data().name;
-            this.session = true;
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+        this.session = true;
+        this.user = user.displayName;
       } else {
         this.session = false;
+        this.user = "";
       }
     });
   },
@@ -90,7 +86,7 @@ export default {
         this.$store.commit("userHasSearched", false);
         this.$store.commit("userSearchTitle", "");
       }
-    },
-  },
+    }
+  }
 };
 </script>

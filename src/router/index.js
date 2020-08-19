@@ -5,9 +5,9 @@ import SignIn from "../views/Front/SignIn.vue";
 import Login from "../views/Front/Login.vue";
 // Admin
 import HomeAdmin from "../views/Admin/AdminHome.vue";
-import AdminProducts from "../components/Admin/AdminProducts.vue";
-import AdminUsers from "../components/Admin/AdminUsers.vue";
-import AdminWelcomePage from "../components/Admin/AdminWelcomePage.vue";
+import AdminProducts from "../views/Admin/AdminProducts.vue";
+import AdminUsers from "../views/Admin/AdminUsers.vue";
+import AdminWelcomePage from "../views/Admin/AdminWelcomePage.vue";
 
 import { fb } from "../firebase";
 
@@ -16,7 +16,6 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: "/admin",
-    name: "Admin",
     component: HomeAdmin,
     children: [
       {
@@ -27,10 +26,12 @@ const routes = [
       {
         path: "products",
         component: AdminProducts,
+        meta: { requiresAuth: true },
       },
       {
         path: "users",
         component: AdminUsers,
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -65,10 +66,16 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     fb.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        next("/");
+      if (user) {
+        fb.auth()
+          .currentUser.getIdTokenResult()
+          .then(function({ claims }) {
+            if (claims.admin) {
+              next();
+            }
+          });
       } else {
-        next();
+        next("/");
       }
     });
   } else {

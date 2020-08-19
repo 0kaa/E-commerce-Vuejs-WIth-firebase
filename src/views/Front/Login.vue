@@ -41,7 +41,6 @@ export default {
       password: null,
     };
   },
-
   methods: {
     register() {
       fb.auth()

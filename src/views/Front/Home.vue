@@ -5,45 +5,43 @@
       <div class="container">
         <h2 class="text-center" v-if="products.length < 1">No product found</h2>
         <div class="row">
-          <div
-            class="col-md-4 mb-4"
-            v-for="product in products"
-            :key="product.id"
-            :id="product.id"
-          >
+          <div class="col-md-4 mb-4" v-for="product in products" :key="product.id" :id="product.id">
             <div class="card">
-              <img :src="product.image" class="card-img-top img-fluid" />
+              <carousel
+                :nav="false"
+                :dots="false"
+                :items="1"
+                v-if="product.data().image.length > 1"
+              >
+                <div v-for="(i,index) in (product.data().image.length)" :key="index">
+                  <img :src="product.data().image[index]" class="card-img-top img-fluid" />
+                </div>
+              </carousel>
+              <div v-else>
+                <img :src="product.data().image[0]" class="card-img-top img-fluid" />
+              </div>
               <div class="card-body">
-                <h5 class="card-title text-primary">
-                  {{ product.data().title }}
-                </h5>
+                <h5 class="card-title">{{ product.data().title }}</h5>
                 <p class="card-text">{{ product.shortDescription }}</p>
               </div>
-              <div
-                class="card-footer d-flex align-items-center justify-content-between"
-              >
+              <div class="card-footer d-flex align-items-center justify-content-between">
                 <div class="buttons">
                   <button
-                    class="btn btn-outline-primary mr-2"
-                    v-if="!product.isAddedToCart"
-                    @click.prevent="addToCart(product.id)"
-                  >
-                    <i class="fa fa-shopping-cart"></i>
-                  </button>
-                  <button
+                    class="btn btn-primary mr-2"
+                    @click.prevent="addToCart(product)"
+                  >Add to Cart</button>
+                  <!-- <button
                     class="btn btn-outline-primary"
                     v-if="!product.isAddedToCart"
                     @click.prevent="quickView(product.id)"
                   >
                     <i class="fa fa-eye"></i>
-                  </button>
+                  </button>-->
                   <p
                     class="btn text-danger m-0"
                     v-if="product.isAddedToCart"
                     @click.prevent="removeFromCart(product.id)"
-                  >
-                    Remove To cart
-                  </p>
+                  >Remove To cart</p>
                 </div>
                 <span class="price">${{ product.data().price }}</span>
               </div>
@@ -53,7 +51,6 @@
         <div class="text-center" v-if="products.length > 6">
           <button class="btn btn-primary" @click="loadMore">Load More</button>
         </div>
-        <Cart></Cart>
         <quick-view></quick-view>
       </div>
     </div>
@@ -62,16 +59,17 @@
 
 <script>
 import { db } from "../../firebase";
-import Cart from "../../components/Front/cart";
+
 import QuickView from "../../components/Front/QuickView";
+import carousel from "vue-owl-carousel";
 export default {
   name: "Home",
-  components: { Cart, QuickView },
+  components: { QuickView, carousel },
   data() {
     return {
       currentPage: 1,
       postsPerPage: 6,
-      products: [],
+      products: []
     };
   },
   created() {
@@ -79,20 +77,19 @@ export default {
   },
   methods: {
     productsList() {
-      db.collection("products")
-        .orderBy("title", "asc")
-        .onSnapshot((querySnapshot) => {
-          this.products = [];
-          querySnapshot.forEach((doc) => {
-            this.products.push(doc);
-          });
+      db.collection("products").onSnapshot(querySnapshot => {
+        this.products = [];
+        querySnapshot.forEach(doc => {
+          this.products.push(doc);
         });
+        this.$store.commit("productsList", this.products);
+      });
     },
     getByTitle(list, keyword) {
       const search = keyword.trim().toLowerCase();
       if (!search.length) return list;
       return list.filter(
-        (item) =>
+        item =>
           item
             .data()
             .title.toLowerCase()
@@ -111,7 +108,7 @@ export default {
     addToCart(id) {
       let data = {
         id: id,
-        status: true,
+        status: true
       };
       this.$store.commit("addToCart", id);
       this.$store.commit("setAddedBtn", data);
@@ -119,7 +116,7 @@ export default {
     removeFromCart(id) {
       let data = {
         id: id,
-        status: false,
+        status: false
       };
       this.$store.commit("removeFromCart", id);
       this.$store.commit("setAddedBtn", data);
@@ -130,7 +127,7 @@ export default {
 
         setTimeout(() => this.currentPage++, 500);
       }
-    },
+    }
   },
   computed: {
     totalPages() {
@@ -138,18 +135,7 @@ export default {
     },
     productsBySearch() {
       return this.getProductByTitle();
-    },
-
-    // products() {
-    //   if (this.$store.state.userInfo.hasSearched) {
-    //     return this.getProductByTitle();
-    //   } else {
-    //     return this.$store.state.products.slice(
-    //       0,
-    //       this.currentPage * this.postsPerPage
-    //     );
-    //   }
-    // },
-  },
+    }
+  }
 };
 </script>

@@ -5,12 +5,12 @@
 </template>
 <script>
 export default {
-  name: "App",
+  name: "App"
 };
 </script>
 <style lang="scss">
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: 400;
 }
 body,
